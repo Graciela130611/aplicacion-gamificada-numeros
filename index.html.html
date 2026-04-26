@@ -1,0 +1,1232 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MathQuest 3ºESO – Enteros y Fracciones</title>
+<style>
+  /* =============================================
+     VARIABLES Y RESET
+  ============================================= */
+  :root {
+    --primary:   #6c63ff;
+    --primary-d: #574fd6;
+    --secondary: #ff6584;
+    --success:   #43d98f;
+    --warning:   #ffc947;
+    --danger:    #ff4d4d;
+    --bg:        #0f0f1a;
+    --bg2:       #1a1a2e;
+    --bg3:       #16213e;
+    --card:      #1e1e3a;
+    --card2:     #252550;
+    --text:      #e8e8ff;
+    --text-muted:#9999cc;
+    --border:    #33335a;
+    --radius:    16px;
+    --shadow:    0 8px 32px rgba(108,99,255,.25);
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { font-size: 16px; }
+  body {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  /* =============================================
+     CABECERA
+  ============================================= */
+  header {
+    width: 100%;
+    background: linear-gradient(135deg, var(--bg2), var(--bg3));
+    border-bottom: 2px solid var(--border);
+    padding: 18px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .logo {
+    font-size: 1.6rem;
+    font-weight: 900;
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    letter-spacing: -1px;
+  }
+  .logo span { font-size: 1.1rem; font-weight: 500; color: var(--text-muted); -webkit-text-fill-color: var(--text-muted); }
+
+  /* HUD de stats */
+  .hud {
+    display: flex;
+    gap: 14px;
+    align-items: center;
+  }
+  .hud-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--card);
+    padding: 6px 12px;
+    border-radius: 50px;
+    font-size: .85rem;
+    font-weight: 700;
+    border: 1px solid var(--border);
+  }
+  .hud-item .icon { font-size: 1.1rem; }
+  .hud-score { color: var(--warning); }
+  .hud-streak { color: var(--secondary); }
+  .hud-lives  { color: var(--danger); }
+
+  /* =============================================
+     CONTENEDOR PRINCIPAL
+  ============================================= */
+  main {
+    width: 100%;
+    max-width: 760px;
+    padding: 28px 16px 60px;
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+  }
+
+  /* =============================================
+     BARRA DE PROGRESO
+  ============================================= */
+  .progress-bar-wrap {
+    background: var(--card);
+    border-radius: 50px;
+    height: 14px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+  }
+  .progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--primary), var(--secondary));
+    border-radius: 50px;
+    transition: width .5s cubic-bezier(.4,0,.2,1);
+  }
+  .progress-label {
+    font-size: .78rem;
+    color: var(--text-muted);
+    text-align: right;
+    margin-top: 4px;
+  }
+
+  /* =============================================
+     SELECTOR DE MODO / NIVEL
+  ============================================= */
+  .panel {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 22px;
+    box-shadow: var(--shadow);
+  }
+  .panel-title {
+    font-size: .75rem;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--text-muted);
+    margin-bottom: 14px;
+  }
+
+  /* Chips de modo */
+  .chips { display: flex; flex-wrap: wrap; gap: 10px; }
+  .chip {
+    padding: 8px 18px;
+    border-radius: 50px;
+    border: 2px solid var(--border);
+    background: var(--card2);
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: .88rem;
+    font-weight: 600;
+    transition: all .2s;
+  }
+  .chip:hover { border-color: var(--primary); color: var(--text); }
+  .chip.active {
+    background: linear-gradient(135deg, var(--primary), var(--primary-d));
+    border-color: var(--primary);
+    color: #fff;
+    box-shadow: 0 4px 16px rgba(108,99,255,.4);
+  }
+
+  /* =============================================
+     TARJETA DE EJERCICIO
+  ============================================= */
+  .exercise-card {
+    background: linear-gradient(145deg, var(--card), var(--card2));
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 32px 28px;
+    box-shadow: var(--shadow);
+    position: relative;
+    overflow: hidden;
+  }
+  .exercise-card::before {
+    content: '';
+    position: absolute;
+    top: -60px; right: -60px;
+    width: 200px; height: 200px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(108,99,255,.15), transparent 70%);
+    pointer-events: none;
+  }
+  .level-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 50px;
+    font-size: .72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 16px;
+  }
+  .level-1 { background: rgba(67,217,143,.2); color: var(--success); border: 1px solid var(--success); }
+  .level-2 { background: rgba(255,201,71,.2);  color: var(--warning); border: 1px solid var(--warning); }
+  .level-3 { background: rgba(255,101,132,.2); color: var(--secondary); border: 1px solid var(--secondary); }
+
+  .question-label {
+    font-size: .8rem;
+    color: var(--text-muted);
+    margin-bottom: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .question-text {
+    font-size: 2.2rem;
+    font-weight: 800;
+    color: #fff;
+    min-height: 70px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    line-height: 1.2;
+  }
+  /* Fracciones inline */
+  .frac {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    vertical-align: middle;
+    font-size: 1.1rem;
+    font-weight: 800;
+    line-height: 1;
+    gap: 3px;
+  }
+  .frac .num, .frac .den {
+    display: block;
+    text-align: center;
+    padding: 0 4px;
+  }
+  .frac .bar {
+    display: block;
+    width: 100%;
+    height: 2px;
+    background: var(--text);
+    border-radius: 2px;
+  }
+
+  /* =============================================
+     RESPUESTA
+  ============================================= */
+  .answer-area {
+    display: flex;
+    gap: 10px;
+    margin-top: 24px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  .answer-input {
+    flex: 1;
+    min-width: 140px;
+    padding: 14px 18px;
+    border-radius: 12px;
+    border: 2px solid var(--border);
+    background: var(--bg2);
+    color: var(--text);
+    font-size: 1.3rem;
+    font-weight: 700;
+    outline: none;
+    transition: border-color .2s, box-shadow .2s;
+  }
+  .answer-input:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 4px rgba(108,99,255,.2);
+  }
+  .answer-input.correct { border-color: var(--success); box-shadow: 0 0 0 4px rgba(67,217,143,.2); }
+  .answer-input.wrong   { border-color: var(--danger);  box-shadow: 0 0 0 4px rgba(255,77,77,.2);  animation: shake .35s; }
+
+  @keyframes shake {
+    0%,100% { transform: translateX(0); }
+    20%,60%  { transform: translateX(-8px); }
+    40%,80%  { transform: translateX(8px); }
+  }
+
+  .hint-text {
+    font-size: .78rem;
+    color: var(--text-muted);
+    margin-top: 6px;
+  }
+
+  /* =============================================
+     BOTONES
+  ============================================= */
+  .btn {
+    padding: 13px 26px;
+    border-radius: 12px;
+    border: none;
+    cursor: pointer;
+    font-size: .95rem;
+    font-weight: 700;
+    transition: all .2s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .btn-primary {
+    background: linear-gradient(135deg, var(--primary), var(--primary-d));
+    color: #fff;
+    box-shadow: 0 4px 16px rgba(108,99,255,.4);
+  }
+  .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 24px rgba(108,99,255,.5); }
+  .btn-secondary {
+    background: var(--card2);
+    color: var(--text-muted);
+    border: 1px solid var(--border);
+  }
+  .btn-secondary:hover { color: var(--text); border-color: var(--primary); }
+  .btn-explain {
+    background: linear-gradient(135deg, #ff6584, #ff4d6d);
+    color: #fff;
+    box-shadow: 0 4px 16px rgba(255,101,132,.35);
+  }
+  .btn-explain:hover { transform: translateY(-2px); }
+  .btn:disabled { opacity: .45; cursor: not-allowed; transform: none !important; }
+
+  .actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 8px; }
+
+  /* =============================================
+     FEEDBACK / MENSAJE
+  ============================================= */
+  .feedback-box {
+    border-radius: 14px;
+    padding: 18px 20px;
+    font-size: .95rem;
+    line-height: 1.6;
+    display: none;
+    animation: fadeIn .3s ease;
+  }
+  @keyframes fadeIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:none; } }
+  .feedback-box.show { display: block; }
+  .feedback-ok  { background: rgba(67,217,143,.12); border: 1px solid rgba(67,217,143,.4); color: var(--success); }
+  .feedback-err { background: rgba(255,77,77,.12);  border: 1px solid rgba(255,77,77,.4);  color: #ff8080; }
+  .feedback-title { font-weight: 800; font-size: 1.1rem; margin-bottom: 6px; }
+  .motivational { color: var(--warning); font-style: italic; margin-top: 8px; font-size: .9rem; }
+
+  /* =============================================
+     PASO A PASO
+  ============================================= */
+  .steps-box {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 20px 22px;
+    display: none;
+    animation: fadeIn .3s ease;
+  }
+  .steps-box.show { display: block; }
+  .steps-title { font-weight: 800; color: var(--primary); margin-bottom: 14px; font-size: 1rem; }
+  .step-item {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 12px;
+    align-items: flex-start;
+  }
+  .step-num {
+    min-width: 28px; height: 28px;
+    border-radius: 50%;
+    background: var(--primary);
+    color: #fff;
+    font-weight: 800;
+    font-size: .8rem;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .step-text { font-size: .9rem; line-height: 1.5; color: var(--text); }
+  .step-text strong { color: var(--warning); }
+
+  /* =============================================
+     ERRORES FRECUENTES
+  ============================================= */
+  .errors-section { }
+  .errors-list { display: flex; flex-direction: column; gap: 10px; }
+  .error-item {
+    background: rgba(255,77,77,.08);
+    border: 1px solid rgba(255,77,77,.25);
+    border-radius: 12px;
+    padding: 14px 16px;
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+  }
+  .error-icon { font-size: 1.3rem; }
+  .error-body { }
+  .error-title { font-weight: 700; color: var(--secondary); font-size: .9rem; }
+  .error-desc  { font-size: .82rem; color: var(--text-muted); margin-top: 3px; line-height: 1.5; }
+
+  /* =============================================
+     VIDAS ANIMADAS
+  ============================================= */
+  .lives-display { display: flex; gap: 4px; }
+  .heart { font-size: 1.2rem; transition: transform .3s; }
+  .heart.lost { opacity: .25; transform: scale(.7); }
+
+  /* =============================================
+     PANTALLA GAME OVER / NIVEL COMPLETADO
+  ============================================= */
+  .overlay {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(15,15,26,.92);
+    z-index: 200;
+    align-items: center;
+    justify-content: center;
+    animation: fadeIn .3s;
+  }
+  .overlay.show { display: flex; }
+  .overlay-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 24px;
+    padding: 48px 40px;
+    text-align: center;
+    max-width: 400px;
+    width: 90%;
+    box-shadow: 0 20px 80px rgba(0,0,0,.6);
+  }
+  .overlay-emoji { font-size: 5rem; margin-bottom: 16px; }
+  .overlay-title { font-size: 2rem; font-weight: 900; margin-bottom: 10px; }
+  .overlay-sub   { color: var(--text-muted); margin-bottom: 28px; font-size: .95rem; }
+  .overlay-stats { display: flex; justify-content: center; gap: 28px; margin-bottom: 28px; }
+  .stat-box { text-align: center; }
+  .stat-val { font-size: 2rem; font-weight: 900; color: var(--warning); }
+  .stat-lbl { font-size: .75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; }
+
+  /* =============================================
+     RESPONSIVE
+  ============================================= */
+  @media (max-width: 540px) {
+    .question-text { font-size: 1.7rem; }
+    .hud-item span.label { display: none; }
+    header { padding: 12px 14px; }
+    .exercise-card { padding: 22px 18px; }
+    .overlay-card { padding: 36px 24px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- =============================================
+     CABECERA / HUD
+============================================= -->
+<header>
+  <div class="logo">MathQuest <span>3ºESO</span></div>
+  <div class="hud">
+    <div class="hud-item hud-score">
+      <span class="icon">⭐</span>
+      <span id="scoreDisplay">0</span>
+      <span class="label"> pts</span>
+    </div>
+    <div class="hud-item hud-streak">
+      <span class="icon">🔥</span>
+      <span id="streakDisplay">0</span>
+    </div>
+    <div class="hud-item hud-lives">
+      <div class="lives-display" id="livesDisplay"></div>
+    </div>
+  </div>
+</header>
+
+<!-- =============================================
+     CONTENIDO PRINCIPAL
+============================================= -->
+<main>
+
+  <!-- Barra de progreso -->
+  <div>
+    <div class="progress-bar-wrap">
+      <div class="progress-bar-fill" id="progressBar" style="width:0%"></div>
+    </div>
+    <div class="progress-label" id="progressLabel">Ejercicio 0 / 10</div>
+  </div>
+
+  <!-- Selector de modo -->
+  <div class="panel">
+    <div class="panel-title">📚 Tipo de ejercicio</div>
+    <div class="chips" id="modeChips">
+      <div class="chip active" data-mode="suma">➕ Suma y Resta</div>
+      <div class="chip" data-mode="multiplicacion">✖️ Multiplicación y División</div>
+      <div class="chip" data-mode="fracciones">½ Fracciones</div>
+    </div>
+  </div>
+
+  <!-- Selector de nivel -->
+  <div class="panel">
+    <div class="panel-title">🎯 Nivel de dificultad</div>
+    <div class="chips" id="levelChips">
+      <div class="chip active" data-level="1">🟢 Nivel 1 – Básico</div>
+      <div class="chip" data-level="2">🟡 Nivel 2 – Medio</div>
+      <div class="chip" data-level="3">🔴 Nivel 3 – Difícil</div>
+    </div>
+  </div>
+
+  <!-- Tarjeta de ejercicio -->
+  <div class="exercise-card" id="exerciseCard">
+    <div class="level-badge level-1" id="levelBadge">Nivel 1 – Básico</div>
+    <div class="question-label">Resuelve la operación:</div>
+    <div class="question-text" id="questionText">Cargando…</div>
+
+    <div class="answer-area">
+      <div style="flex:1; min-width:140px;">
+        <input class="answer-input" type="text" id="answerInput"
+          placeholder="Tu respuesta (ej: -3 o 2/5)"
+          autocomplete="off" autocorrect="off">
+        <div class="hint-text" id="hintText">Escribe un número entero o fracción (p.ej. 3/4). ¡Acepta fracciones equivalentes!</div>
+      </div>
+    </div>
+
+    <div class="actions" style="margin-top:18px;">
+      <button class="btn btn-primary" id="btnCheck">✅ Comprobar</button>
+      <button class="btn btn-explain" id="btnExplain">💡 Explícame</button>
+      <button class="btn btn-secondary" id="btnSkip">⏭ Siguiente</button>
+    </div>
+  </div>
+
+  <!-- Feedback -->
+  <div class="feedback-box" id="feedbackBox">
+    <div class="feedback-title" id="feedbackTitle"></div>
+    <div id="feedbackBody"></div>
+    <div class="motivational" id="motivationalMsg"></div>
+  </div>
+
+  <!-- Paso a paso -->
+  <div class="steps-box" id="stepsBox">
+    <div class="steps-title">📝 Resolución paso a paso</div>
+    <div id="stepsContent"></div>
+  </div>
+
+  <!-- Errores frecuentes -->
+  <div class="panel errors-section">
+    <div class="panel-title">⚠️ Errores frecuentes en este tema</div>
+    <div class="errors-list" id="errorsList"></div>
+  </div>
+
+</main>
+
+<!-- =============================================
+     OVERLAY: GAME OVER / COMPLETADO
+============================================= -->
+<div class="overlay" id="overlay">
+  <div class="overlay-card">
+    <div class="overlay-emoji" id="overlayEmoji">🎉</div>
+    <div class="overlay-title" id="overlayTitle">¡Completado!</div>
+    <div class="overlay-sub" id="overlaySub">Has terminado la sesión</div>
+    <div class="overlay-stats">
+      <div class="stat-box">
+        <div class="stat-val" id="finalScore">0</div>
+        <div class="stat-lbl">Puntos</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-val" id="finalStreak">0</div>
+        <div class="stat-lbl">Racha máx.</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-val" id="finalCorrect">0</div>
+        <div class="stat-lbl">Correctas</div>
+      </div>
+    </div>
+    <button class="btn btn-primary" style="width:100%; justify-content:center;" id="btnRestart">
+      🔄 Jugar de nuevo
+    </button>
+  </div>
+</div>
+
+<!-- =============================================
+     JAVASCRIPT
+============================================= -->
+<script>
+'use strict';
+
+/* -----------------------------------------------
+   ESTADO GLOBAL DE LA APLICACIÓN
+----------------------------------------------- */
+const STATE = {
+  mode:       'suma',        // 'suma' | 'multiplicacion' | 'fracciones'
+  level:      1,             // 1 | 2 | 3
+  score:      0,
+  streak:     0,
+  maxStreak:  0,
+  lives:      3,
+  MAX_LIVES:  3,
+  exercise:   0,             // índice actual (0-based)
+  TOTAL_EX:   10,            // ejercicios por sesión
+  correct:    0,
+  answered:   false,
+  current:    null,          // { question, answer:{num,den}, stepsHTML, questionHTML }
+};
+
+/* -----------------------------------------------
+   MENSAJES MOTIVADORES
+----------------------------------------------- */
+const MOTIVATORS_OK = [
+  '¡Eres una máquina de calcular! 🤖',
+  '¡Sigue así, campeón/a! 🏆',
+  '¡Respuesta perfecta! Sigues en racha 🔥',
+  '¡Brillante! Las mates te adoran 💜',
+  '¡Correcto! Un paso más hacia el 10 🎯',
+  '¡Extraordinario! Así se hace 💪',
+];
+const MOTIVATORS_ERR = [
+  'No pasa nada, los errores nos enseñan 📖',
+  '¡Casi! Revisa el paso a paso y lo pillarás 💡',
+  'Los grandes matemáticos también se equivocan 😉',
+  '¡Inténtalo de nuevo! Tú puedes 💪',
+  'Un error hoy = un acierto mañana 📈',
+];
+
+/* -----------------------------------------------
+   ERRORES FRECUENTES (por modo)
+----------------------------------------------- */
+const COMMON_ERRORS = {
+  suma: [
+    {
+      title: 'Confundir el signo del resultado',
+      desc:  '(-5) + (-3) = -8, no +8. Dos negativos suman y el resultado es negativo.',
+    },
+    {
+      title: 'Restar cuando hay distinto signo',
+      desc:  '(-7) + (+4) = -3. Se resta el menor al mayor y se pone el signo del mayor en valor absoluto.',
+    },
+    {
+      title: 'Olvidar los paréntesis al cambiar signo',
+      desc:  '5 − (−3) = 5 + 3 = 8. Restar un negativo equivale a sumar.',
+    },
+  ],
+  multiplicacion: [
+    {
+      title: 'Regla de los signos en multiplicación/división',
+      desc:  '(+)·(+) = (+)   (−)·(−) = (+)   (+)·(−) = (−)   (−)·(+) = (−)',
+    },
+    {
+      title: 'Dividir y olvidar el signo',
+      desc:  '(−12) ÷ (−4) = +3. Al dividir dos negativos, el resultado es positivo.',
+    },
+    {
+      title: 'Multiplicar más de dos factores',
+      desc:  'Cuenta cuántos negativos hay. Par → positivo. Impar → negativo.',
+    },
+  ],
+  fracciones: [
+    {
+      title: 'Sumar denominadores distintos sin antes igualarlos',
+      desc:  '1/2 + 1/3 ≠ 2/5. Hay que buscar el mínimo común múltiplo (mcm) del denominador.',
+    },
+    {
+      title: 'Multiplicar fracciones como si fueran sumas',
+      desc:  '(2/3)·(3/4) = 6/12 = 1/2. Se multiplican numeradores y denominadores por separado.',
+    },
+    {
+      title: 'No simplificar la fracción final',
+      desc:  '6/9 = 2/3. Divide numerador y denominador por el MCD.',
+    },
+    {
+      title: 'Ignorar el signo en fracciones negativas',
+      desc:  '−(2/3) = (−2)/3 = 2/(−3). El signo puede ir en el numerador o fuera.',
+    },
+  ],
+};
+
+/* -----------------------------------------------
+   UTILIDADES MATEMÁTICAS
+----------------------------------------------- */
+
+/** Máximo común divisor (Algoritmo de Euclides) */
+function gcd(a, b) {
+  a = Math.abs(a); b = Math.abs(b);
+  while (b) { [a, b] = [b, a % b]; }
+  return a;
+}
+
+/** Mínimo común múltiplo */
+function lcm(a, b) {
+  return Math.abs(a * b) / gcd(a, b);
+}
+
+/** Simplifica una fracción {num, den} → {num, den, sign} */
+function simplify(num, den) {
+  if (den === 0) return { num: 0, den: 1 };
+  const sign  = (num < 0) !== (den < 0) ? -1 : 1;
+  const absN  = Math.abs(num);
+  const absD  = Math.abs(den);
+  const d     = gcd(absN, absD);
+  return { num: sign * (absN / d), den: absD / d };
+}
+
+/** ¿Dos fracciones son equivalentes? */
+function fracEqual(n1, d1, n2, d2) {
+  const a = simplify(n1, d1);
+  const b = simplify(n2, d2);
+  return a.num === b.num && a.den === b.den;
+}
+
+/** Número aleatorio en [-max, max] sin cero (opcional) */
+function randInt(min, max, nonZero = false) {
+  let v;
+  do { v = Math.floor(Math.random() * (max - min + 1)) + min; }
+  while (nonZero && v === 0);
+  return v;
+}
+
+/** Signo visible: devuelve '+' o '' según convenga para HTML */
+function showSign(n) { return n >= 0 ? '+' : ''; }
+
+/** HTML de una fracción vertical */
+function fracHTML(num, den) {
+  return `<span class="frac"><span class="num">${num}</span><span class="bar"></span><span class="den">${den}</span></span>`;
+}
+
+/* -----------------------------------------------
+   PARSEAR RESPUESTA DEL USUARIO
+   Acepta: "3", "-3", "2/5", "-2/5", "0"
+   Devuelve: { num, den } o null si inválido
+----------------------------------------------- */
+function parseAnswer(raw) {
+  const s = raw.trim().replace(',', '.');
+  // fracción: [-]num/[-]den
+  const fracRe = /^(-?\d+)\s*\/\s*(-?\d+)$/;
+  // entero
+  const intRe  = /^-?\d+$/;
+  if (fracRe.test(s)) {
+    const m = s.match(fracRe);
+    const num = parseInt(m[1], 10);
+    const den = parseInt(m[2], 10);
+    if (den === 0) return null;
+    return simplify(num, den);
+  }
+  if (intRe.test(s)) {
+    return { num: parseInt(s, 10), den: 1 };
+  }
+  return null;
+}
+
+/* -----------------------------------------------
+   GENERADORES DE EJERCICIOS
+----------------------------------------------- */
+
+/* --- SUMA / RESTA con enteros --- */
+function genSuma(level) {
+  let a, b, op;
+  if (level === 1) {
+    a  = randInt(-10, 10, false);
+    b  = randInt(-10, 10, false);
+    op = Math.random() < 0.5 ? '+' : '-';
+  } else if (level === 2) {
+    a  = randInt(-30, 30, false);
+    b  = randInt(-30, 30, false);
+    op = Math.random() < 0.5 ? '+' : '-';
+  } else {
+    // Cadenas de 3 términos
+    a  = randInt(-50, 50, false);
+    b  = randInt(-50, 50, false);
+    const c = randInt(-50, 50, false);
+    const op1 = Math.random() < 0.5 ? '+' : '-';
+    const op2 = Math.random() < 0.5 ? '+' : '-';
+    const res  = op1 === '+' ? (op2 === '+' ? a + b + c : a + b - c) : (op2 === '+' ? a - b + c : a - b - c);
+    const qHTML = `<span>(${a})</span> <span>${op1}</span> <span>(${b})</span> <span>${op2}</span> <span>(${c})</span>`;
+    const stepsHTML = buildStepsSuma3(a, b, c, op1, op2, res);
+    return { questionHTML: qHTML, answer: { num: res, den: 1 }, stepsHTML };
+  }
+
+  const res = op === '+' ? a + b : a - b;
+  const aDisp = a < 0 ? `(${a})` : `${a}`;
+  const bDisp = b < 0 ? `(${b})` : `${b}`;
+  const qHTML = `<span>${aDisp}</span> <span>${op}</span> <span>${bDisp}</span>`;
+  const stepsHTML = buildStepsSuma(a, b, op, res);
+  return { questionHTML: qHTML, answer: { num: res, den: 1 }, stepsHTML };
+}
+
+function buildStepsSuma(a, b, op, res) {
+  const steps = [];
+  if (op === '-') {
+    steps.push(`Restar un número equivale a sumar su opuesto: <strong>(${a}) − (${b}) = (${a}) + (${-b})</strong>`);
+    a = a; b = -b; op = '+';
+  }
+  if ((a >= 0 && b >= 0) || (a < 0 && b < 0)) {
+    steps.push(`Ambos tienen el <strong>mismo signo</strong>: sumamos valores absolutos <strong>(|${a}| + |${b}| = ${Math.abs(a)+Math.abs(b)})</strong> y conservamos el signo.`);
+  } else {
+    steps.push(`Tienen <strong>distinto signo</strong>: restamos el menor al mayor en valor absoluto <strong>(|${Math.abs(a)} − ${Math.abs(b)}| = ${Math.abs(Math.abs(a)-Math.abs(b))})</strong> y ponemos el signo del mayor.`);
+  }
+  steps.push(`Resultado: <strong>${res}</strong>`);
+  return steps;
+}
+
+function buildStepsSuma3(a, b, c, op1, op2, res) {
+  const ab  = op1 === '+' ? a + b : a - b;
+  const steps = [
+    `Primero operamos los dos primeros términos: <strong>(${a}) ${op1} (${b}) = ${ab}</strong>`,
+    `Luego el resultado con el tercero: <strong>(${ab}) ${op2} (${c}) = ${res}</strong>`,
+    `Resultado final: <strong>${res}</strong>`,
+  ];
+  return steps;
+}
+
+/* --- MULTIPLICACIÓN / DIVISIÓN con enteros --- */
+function genMultDiv(level) {
+  let a, b, op;
+  if (level === 1) {
+    a  = randInt(-5, 5, true);
+    b  = randInt(-5, 5, true);
+    op = Math.random() < 0.5 ? '×' : '÷';
+  } else if (level === 2) {
+    a  = randInt(-12, 12, true);
+    b  = randInt(-12, 12, true);
+    op = Math.random() < 0.5 ? '×' : '÷';
+  } else {
+    a  = randInt(-20, 20, true);
+    b  = randInt(-10, 10, true);
+    const c = randInt(-5, 5, true);
+    const res = a * b * c;
+    const qHTML = `<span>(${a})</span> <span>×</span> <span>(${b})</span> <span>×</span> <span>(${c})</span>`;
+    const negs  = [a, b, c].filter(x => x < 0).length;
+    const stepsHTML = [
+      `Primero: <strong>(${a}) × (${b}) = ${a*b}</strong> (${a<0?'negativo':'positivo'} × ${b<0?'negativo':'positivo'} = ${(a<0)!==(b<0)?'negativo':'positivo'})`,
+      `Luego: <strong>(${a*b}) × (${c}) = ${res}</strong>`,
+      `Regla: hay <strong>${negs} factor(es) negativo(s)</strong> → resultado <strong>${negs%2===0?'positivo':'negativo'}</strong>.`,
+      `Resultado: <strong>${res}</strong>`,
+    ];
+    return { questionHTML: qHTML, answer: { num: res, den: 1 }, stepsHTML };
+  }
+
+  if (op === '÷') {
+    // Garantizar división exacta
+    const product = a * b;
+    const dividend = product;
+    const divisor  = b;
+    const res      = a; // product / b = a
+    const qHTML = `<span>(${dividend})</span> <span>÷</span> <span>(${divisor})</span>`;
+    const stepsHTML = buildStepsDiv(dividend, divisor, res);
+    return { questionHTML: qHTML, answer: { num: res, den: 1 }, stepsHTML };
+  }
+
+  const res = a * b;
+  const qHTML = `<span>(${a})</span> <span>×</span> <span>(${b})</span>`;
+  const stepsHTML = buildStepsMult(a, b, res);
+  return { questionHTML: qHTML, answer: { num: res, den: 1 }, stepsHTML };
+}
+
+function buildStepsMult(a, b, res) {
+  const signA = a < 0 ? 'negativo' : 'positivo';
+  const signB = b < 0 ? 'negativo' : 'positivo';
+  const signR = (a<0) !== (b<0) ? 'negativo' : 'positivo';
+  return [
+    `Aplicamos la <strong>regla de los signos</strong>: ${signA} × ${signB} = <strong>${signR}</strong>.`,
+    `Multiplicamos valores absolutos: <strong>${Math.abs(a)} × ${Math.abs(b)} = ${Math.abs(res)}</strong>.`,
+    `Añadimos el signo: resultado = <strong>${res}</strong>.`,
+  ];
+}
+
+function buildStepsDiv(a, b, res) {
+  const signA = a < 0 ? 'negativo' : 'positivo';
+  const signB = b < 0 ? 'negativo' : 'positivo';
+  const signR = (a<0) !== (b<0) ? 'negativo' : 'positivo';
+  return [
+    `Aplicamos la <strong>regla de los signos</strong>: ${signA} ÷ ${signB} = <strong>${signR}</strong>.`,
+    `Dividimos valores absolutos: <strong>${Math.abs(a)} ÷ ${Math.abs(b)} = ${Math.abs(res)}</strong>.`,
+    `Resultado: <strong>${res}</strong>.`,
+  ];
+}
+
+/* --- FRACCIONES --- */
+function genFraccion(level) {
+  // Generar fracciones pequeñas con denominadores manejables
+  const dens = [2, 3, 4, 5, 6, 8, 10];
+
+  function randFrac(maxD = 6) {
+    const d = dens[Math.floor(Math.random() * dens.length) % (level === 1 ? 4 : dens.length)];
+    let n = randInt(level === 1 ? -4 : -9, level === 1 ? 4 : 9, true);
+    return { num: n, den: d };
+  }
+
+  const ops = level === 1 ? ['+', '-'] : level === 2 ? ['+', '-', '×'] : ['+', '-', '×', '÷'];
+  const op  = ops[Math.floor(Math.random() * ops.length)];
+  const f1  = randFrac();
+  let f2    = randFrac();
+  if (op === '÷' && f2.num === 0) f2.num = randInt(1, 5, true);
+
+  let resNum, resDen, stepsHTML, qHTML;
+
+  if (op === '+' || op === '-') {
+    const m   = lcm(f1.den, f2.den);
+    const n1  = f1.num * (m / f1.den);
+    const n2  = f2.num * (m / f2.den);
+    resNum    = op === '+' ? n1 + n2 : n1 - n2;
+    resDen    = m;
+    const r   = simplify(resNum, resDen);
+    qHTML     = `${fracHTML(f1.num, f1.den)} <span>${op}</span> ${fracHTML(f2.num, f2.den)}`;
+    stepsHTML = buildStepsFracSuma(f1, f2, op, m, n1, n2, resNum, resDen, r);
+    return { questionHTML: qHTML, answer: r, stepsHTML };
+  }
+
+  if (op === '×') {
+    resNum = f1.num * f2.num;
+    resDen = f1.den * f2.den;
+    const r = simplify(resNum, resDen);
+    qHTML   = `${fracHTML(f1.num, f1.den)} <span>×</span> ${fracHTML(f2.num, f2.den)}`;
+    stepsHTML = [
+      `Multiplicamos numeradores: <strong>${f1.num} × ${f2.num} = ${resNum}</strong>.`,
+      `Multiplicamos denominadores: <strong>${f1.den} × ${f2.den} = ${resDen}</strong>.`,
+      `Fracción: <strong>${resNum}/${resDen}</strong>. Simplificamos dividiendo por <strong>MCD = ${gcd(Math.abs(resNum), resDen)}</strong>.`,
+      `Resultado: <strong>${r.num}/${r.den}</strong>` + (r.den===1 ? ` = <strong>${r.num}</strong>` : ''),
+    ];
+    return { questionHTML: qHTML, answer: r, stepsHTML };
+  }
+
+  // División
+  resNum = f1.num * f2.den;
+  resDen = f1.den * f2.num;
+  if (resDen === 0) { resDen = 1; resNum = 0; }
+  const r = simplify(resNum, resDen);
+  qHTML   = `${fracHTML(f1.num, f1.den)} <span>÷</span> ${fracHTML(f2.num, f2.den)}`;
+  stepsHTML = [
+    `Dividir fracciones: multiplicamos la primera por la <strong>inversa</strong> de la segunda.`,
+    `${fracHTML(f1.num, f1.den)} × ${fracHTML(f2.den, f2.num)} = ${fracHTML(resNum, resDen)}`,
+    `Simplificamos dividiendo por <strong>MCD = ${gcd(Math.abs(resNum), Math.abs(resDen))}</strong>.`,
+    `Resultado: <strong>${r.num}/${r.den}</strong>` + (r.den===1 ? ` = <strong>${r.num}</strong>` : ''),
+  ];
+  return { questionHTML: qHTML, answer: r, stepsHTML };
+}
+
+function buildStepsFracSuma(f1, f2, op, m, n1, n2, resNum, resDen, r) {
+  const d = gcd(Math.abs(resNum), resDen);
+  return [
+    `Buscamos el <strong>mínimo común múltiplo (mcm)</strong> de ${f1.den} y ${f2.den}: <strong>mcm = ${m}</strong>.`,
+    `Ampliamos: ${fracHTML(f1.num, f1.den)} = ${fracHTML(n1, m)} &nbsp; y &nbsp; ${fracHTML(f2.num, f2.den)} = ${fracHTML(n2, m)}.`,
+    `Operamos numeradores: <strong>${n1} ${op} ${n2} = ${resNum}</strong>. Denominador: <strong>${m}</strong>.`,
+    d > 1
+      ? `Simplificamos <strong>${resNum}/${resDen}</strong> ÷ <strong>${d}</strong> → resultado: <strong>${r.num}/${r.den}</strong>`
+      : `La fracción ya está simplificada: <strong>${r.num}/${r.den}</strong>`,
+    r.den === 1 ? `Es un número entero: <strong>${r.num}</strong>` : '',
+  ].filter(Boolean);
+}
+
+/* -----------------------------------------------
+   GENERADOR CENTRAL — elige tipo según modo
+----------------------------------------------- */
+function generateExercise() {
+  if (STATE.mode === 'suma')           return genSuma(STATE.level);
+  if (STATE.mode === 'multiplicacion') return genMultDiv(STATE.level);
+  return genFraccion(STATE.level);
+}
+
+/* -----------------------------------------------
+   RENDERIZADO
+----------------------------------------------- */
+
+function renderLives() {
+  const el = document.getElementById('livesDisplay');
+  el.innerHTML = '';
+  for (let i = 0; i < STATE.MAX_LIVES; i++) {
+    const heart = document.createElement('span');
+    heart.className = 'heart' + (i >= STATE.lives ? ' lost' : '');
+    heart.textContent = '❤️';
+    el.appendChild(heart);
+  }
+}
+
+function renderHUD() {
+  document.getElementById('scoreDisplay').textContent  = STATE.score;
+  document.getElementById('streakDisplay').textContent = STATE.streak;
+  renderLives();
+}
+
+function renderProgress() {
+  const pct = Math.min(100, (STATE.exercise / STATE.TOTAL_EX) * 100);
+  document.getElementById('progressBar').style.width  = pct + '%';
+  document.getElementById('progressLabel').textContent =
+    `Ejercicio ${STATE.exercise} / ${STATE.TOTAL_EX}`;
+}
+
+function renderLevelBadge() {
+  const badge = document.getElementById('levelBadge');
+  const labels = { 1: 'Nivel 1 – Básico', 2: 'Nivel 2 – Medio', 3: 'Nivel 3 – Difícil' };
+  badge.className = `level-badge level-${STATE.level}`;
+  badge.textContent = labels[STATE.level];
+}
+
+function renderErrors() {
+  const list = document.getElementById('errorsList');
+  list.innerHTML = '';
+  const errors = COMMON_ERRORS[STATE.mode];
+  errors.forEach(e => {
+    list.innerHTML += `
+      <div class="error-item">
+        <span class="error-icon">⚠️</span>
+        <div class="error-body">
+          <div class="error-title">${e.title}</div>
+          <div class="error-desc">${e.desc}</div>
+        </div>
+      </div>`;
+  });
+}
+
+function renderQuestion() {
+  STATE.current   = generateExercise();
+  STATE.answered  = false;
+
+  const input = document.getElementById('answerInput');
+  input.value = '';
+  input.className = 'answer-input';
+  input.focus();
+
+  document.getElementById('questionText').innerHTML = STATE.current.questionHTML;
+  document.getElementById('feedbackBox').className  = 'feedback-box';
+  document.getElementById('stepsBox').className     = 'steps-box';
+  document.getElementById('btnCheck').disabled      = false;
+  renderLevelBadge();
+  renderProgress();
+  renderErrors();
+}
+
+/* -----------------------------------------------
+   LÓGICA DE COMPROBACIÓN
+----------------------------------------------- */
+function checkAnswer() {
+  if (STATE.answered) return;
+
+  const raw  = document.getElementById('answerInput').value;
+  const user = parseAnswer(raw);
+  const corr = STATE.current.answer;
+
+  if (!user) {
+    showFeedback(false, 'Formato no válido',
+      'Escribe un número entero (p.ej. <strong>-7</strong>) o una fracción (p.ej. <strong>3/4</strong> o <strong>-2/5</strong>).',
+      false);
+    return;
+  }
+
+  const isOk = fracEqual(user.num, user.den, corr.num, corr.den);
+
+  STATE.answered = true;
+  STATE.exercise++;
+
+  const input = document.getElementById('answerInput');
+  input.className = 'answer-input ' + (isOk ? 'correct' : 'wrong');
+
+  if (isOk) {
+    const pts = STATE.level * 10 + (STATE.streak >= 3 ? STATE.streak * 2 : 0);
+    STATE.score  += pts;
+    STATE.streak++;
+    STATE.correct++;
+    if (STATE.streak > STATE.maxStreak) STATE.maxStreak = STATE.streak;
+
+    const corrStr = corr.den === 1 ? `${corr.num}` : `${corr.num}/${corr.den}`;
+    showFeedback(true, '¡Correcto! 🎉',
+      `La respuesta es <strong>${corrStr}</strong>. Has ganado <strong>+${pts} puntos</strong>${STATE.streak>=3?' (¡racha x'+STATE.streak+'!)':''}`,
+      true);
+  } else {
+    STATE.lives--;
+    STATE.streak = 0;
+    const corrStr = corr.den === 1 ? `${corr.num}` : `${corr.num}/${corr.den}`;
+    showFeedback(false, '¡Ups! Respuesta incorrecta 😬',
+      `Tu respuesta: <strong>${raw}</strong>. La correcta era: <strong>${corrStr}</strong>.`,
+      true);
+  }
+
+  renderHUD();
+
+  if (STATE.lives <= 0) {
+    setTimeout(showGameOver, 900);
+    return;
+  }
+  if (STATE.exercise >= STATE.TOTAL_EX) {
+    setTimeout(showComplete, 900);
+    return;
+  }
+
+  document.getElementById('btnCheck').disabled = true;
+}
+
+function showFeedback(ok, title, body, showMotivator) {
+  const box  = document.getElementById('feedbackBox');
+  const t    = document.getElementById('feedbackTitle');
+  const b    = document.getElementById('feedbackBody');
+  const m    = document.getElementById('motivationalMsg');
+
+  box.className = 'feedback-box show ' + (ok ? 'feedback-ok' : 'feedback-err');
+  t.textContent = title;
+  b.innerHTML   = body;
+  m.textContent = showMotivator
+    ? (ok ? rnd(MOTIVATORS_OK) : rnd(MOTIVATORS_ERR))
+    : '';
+}
+
+function rnd(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+
+/* -----------------------------------------------
+   PASO A PASO
+----------------------------------------------- */
+function showSteps() {
+  const box  = document.getElementById('stepsBox');
+  const cont = document.getElementById('stepsContent');
+  box.className = 'steps-box show';
+  cont.innerHTML = '';
+  STATE.current.stepsHTML.forEach((s, i) => {
+    cont.innerHTML += `
+      <div class="step-item">
+        <div class="step-num">${i+1}</div>
+        <div class="step-text">${s}</div>
+      </div>`;
+  });
+}
+
+/* -----------------------------------------------
+   OVERLAYS: GAME OVER / COMPLETADO
+----------------------------------------------- */
+function showGameOver() {
+  document.getElementById('overlayEmoji').textContent    = '💔';
+  document.getElementById('overlayTitle').textContent    = '¡Sin vidas!';
+  document.getElementById('overlaySub').textContent      = 'No te rindas, vuelve a intentarlo.';
+  document.getElementById('finalScore').textContent      = STATE.score;
+  document.getElementById('finalStreak').textContent     = STATE.maxStreak;
+  document.getElementById('finalCorrect').textContent    = STATE.correct;
+  document.getElementById('overlay').className           = 'overlay show';
+  // ======= HOOK PARA GOOGLE SHEETS =======
+  sendToGoogleSheets();
+}
+
+function showComplete() {
+  document.getElementById('overlayEmoji').textContent    = '🏆';
+  document.getElementById('overlayTitle').textContent    = '¡Sesión completada!';
+  document.getElementById('overlaySub').textContent      = '¡Fantástico trabajo! Sigue practicando.';
+  document.getElementById('finalScore').textContent      = STATE.score;
+  document.getElementById('finalStreak').textContent     = STATE.maxStreak;
+  document.getElementById('finalCorrect').textContent    = STATE.correct;
+  document.getElementById('overlay').className           = 'overlay show';
+  // ======= HOOK PARA GOOGLE SHEETS =======
+  sendToGoogleSheets();
+}
+
+function restartGame() {
+  STATE.score    = 0;
+  STATE.streak   = 0;
+  STATE.maxStreak= 0;
+  STATE.lives    = STATE.MAX_LIVES;
+  STATE.exercise = 0;
+  STATE.correct  = 0;
+  STATE.answered = false;
+  document.getElementById('overlay').className = 'overlay';
+  renderHUD();
+  renderQuestion();
+}
+
+/* -----------------------------------------------
+   GOOGLE SHEETS (stub para ampliar)
+   Envía los datos de la sesión al finalizar.
+   Sustituye SHEET_URL por tu Apps Script endpoint.
+----------------------------------------------- */
+function sendToGoogleSheets() {
+  const SHEET_URL = ''; // TODO: pegar aquí tu Google Apps Script Web App URL
+  if (!SHEET_URL) return; // Sin URL, no hace nada
+
+  const payload = {
+    fecha:    new Date().toISOString(),
+    modo:     STATE.mode,
+    nivel:    STATE.level,
+    puntos:   STATE.score,
+    correctas:STATE.correct,
+    rachaMax: STATE.maxStreak,
+  };
+
+  fetch(SHEET_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  }).catch(() => { /* silencioso */ });
+}
+
+/* -----------------------------------------------
+   EVENTOS
+----------------------------------------------- */
+document.addEventListener('DOMContentLoaded', () => {
+
+  // Inicializar
+  renderHUD();
+  renderQuestion();
+
+  // Botón comprobar
+  document.getElementById('btnCheck').addEventListener('click', checkAnswer);
+
+  // Intro también comprueba con Enter
+  document.getElementById('answerInput').addEventListener('keydown', e => {
+    if (e.key === 'Enter') checkAnswer();
+  });
+
+  // Botón siguiente
+  document.getElementById('btnSkip').addEventListener('click', () => {
+    if (!STATE.answered) {
+      // Si salta sin responder, cuenta como error
+      STATE.answered = true;
+      STATE.lives--;
+      STATE.streak = 0;
+      STATE.exercise++;
+      renderHUD();
+      if (STATE.lives <= 0) { showGameOver(); return; }
+      if (STATE.exercise >= STATE.TOTAL_EX) { showComplete(); return; }
+    }
+    renderQuestion();
+  });
+
+  // Botón explícame
+  document.getElementById('btnExplain').addEventListener('click', showSteps);
+
+  // Reiniciar desde overlay
+  document.getElementById('btnRestart').addEventListener('click', restartGame);
+
+  // Selector de modo
+  document.querySelectorAll('#modeChips .chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      document.querySelectorAll('#modeChips .chip').forEach(c => c.classList.remove('active'));
+      chip.classList.add('active');
+      STATE.mode = chip.dataset.mode;
+      STATE.exercise = 0;
+      renderProgress();
+      renderQuestion();
+    });
+  });
+
+  // Selector de nivel
+  document.querySelectorAll('#levelChips .chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      document.querySelectorAll('#levelChips .chip').forEach(c => c.classList.remove('active'));
+      chip.classList.add('active');
+      STATE.level = parseInt(chip.dataset.level, 10);
+      STATE.exercise = 0;
+      renderProgress();
+      renderQuestion();
+    });
+  });
+
+});
+</script>
+</body>
+</html>
